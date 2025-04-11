@@ -4,8 +4,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const body = await req.body;
-    const { prompt } = JSON.parse(body);
+    const { prompt } = req.body;
 
     const response = await fetch("https://api.openai.com/v1/images/generations", {
       method: "POST",
@@ -21,11 +20,16 @@ export default async function handler(req, res) {
     });
 
     const data = await response.json();
-    const imageUrl = data.data[0].url;
 
+    if (!data?.data?.[0]?.url) {
+      throw new Error('No image returned from OpenAI');
+    }
+
+    const imageUrl = data.data[0].url;
     return res.status(200).json({ imageUrl });
+
   } catch (error) {
-    console.error('Error:', error);
-    return res.status(500).json({ error: 'Something went wrong' });
+    console.error('API error:', error);
+    return res.status(500).json({ error: 'Something went wrong generating the image.' });
   }
 }
