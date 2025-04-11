@@ -1,10 +1,14 @@
 export default async function handler(req, res) {
+  console.log('[API] Request received');
+
   if (req.method !== 'POST') {
+    console.log('[API] Method not allowed:', req.method);
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
   try {
     const { prompt } = req.body;
+    console.log('[API] Prompt received:', prompt);
 
     const response = await fetch("https://api.openai.com/v1/images/generations", {
       method: "POST",
@@ -20,8 +24,10 @@ export default async function handler(req, res) {
     });
 
     const data = await response.json();
+    console.log('[API] Response from OpenAI:', data);
 
     if (!data?.data?.[0]?.url) {
+      console.log('[API] No image URL returned');
       throw new Error('No image returned from OpenAI');
     }
 
@@ -29,7 +35,7 @@ export default async function handler(req, res) {
     return res.status(200).json({ imageUrl });
 
   } catch (error) {
-    console.error('API error:', error);
+    console.error('[API ERROR]', error);
     return res.status(500).json({ error: 'Something went wrong generating the image.' });
   }
 }
